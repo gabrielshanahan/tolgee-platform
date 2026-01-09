@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) 2020. Tolgee
+ */
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'io.spring.dependency-management'
+    id 'application'
+}
+
+group = 'io.tolgee.codeanalysis'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
+application {
+    mainClass = 'io.tolgee.codeanalysis.MainKt'
+}
+
+dependencies {
+    // Kotlin compiler for PSI parsing
+    implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:${kotlinVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+
+    // JSON serialization
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+
+    // Coroutines for parallel processing
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
+
+    // Testing
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencyManagement {
+    applyMavenExclusions = false
+    imports {
+        mavenBom 'org.junit:junit-bom:5.11.4'
+    }
+}
+
+// Task to run the analysis
+tasks.register('analyzeCode', JavaExec) {
+    group = 'analysis'
+    description = 'Analyze the Kotlin codebase and generate dependency graph data'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.tolgee.codeanalysis.MainKt'
+
+    // Pass the project root directory
+    args = [rootProject.projectDir.absolutePath]
+
+    // Output directory for the JSON files
+    systemProperty 'output.dir', "${rootProject.projectDir}/build/code-analysis"
+}

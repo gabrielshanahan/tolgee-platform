@@ -127,3 +127,6 @@ project(':security').projectDir = new File('backend/security')
 
 include ':ktlint'
 project(':ktlint').projectDir = new File('backend/ktlint')
+
+include ':code-analysis'
+project(':code-analysis').projectDir = new File('backend/code-analysis')
